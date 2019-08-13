@@ -20,3 +20,25 @@ exports.createTopic = (req, res) => {
         res.json(created_Topic)
     });
 }
+
+exports.getQuestionsForTopic = (req, res) => {
+    let topic_id = req.params.topic_id;
+    Question.find({topic_id: topic_id}, (error, topics) => {
+        if(error){
+            res.status(400)
+        }
+        res.json(topics)
+    })
+}
+
+
+exports.createQuestion = (req, res) => {
+    question = req.body
+    Question.create(question, (err, created_question) => {
+        if(err){
+            console.log(err)
+            res.status(400)
+        }
+        res.json(created_question)
+    });
+}
