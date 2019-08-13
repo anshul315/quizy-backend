@@ -25,3 +25,16 @@ exports.createQuiz = (req, res) => {
         
     })
 }
+
+
+exports.getQuiz = (req, res) => {
+    let quiz_id = req.params.quiz_id;
+    console.log("here")
+    Quiz.find({_id: quiz_id}, (error, quiz) => {
+        if(error){
+            console.log(error)
+            res.status(400)
+        }
+        res.json(quiz)
+    })
+}
