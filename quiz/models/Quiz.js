@@ -12,7 +12,11 @@ const quizSchema = mongoose.Schema({
         default: shortId.generate
     }, 
     questions: [],
-    participants: []
+    participants: [],
+    is_started: {
+        type: Boolean,
+        default: false
+    }
 })
 
 const Quiz = mongoose.model("Quiz", quizSchema);

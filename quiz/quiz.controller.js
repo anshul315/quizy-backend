@@ -4,7 +4,6 @@ const Quiz = require("./models/Quiz");
 
 exports.createQuiz = (req, res) => {
     let topic_id = req.params.topic_id;
-    console.log("here")
     Question.find({topic_id: topic_id}, (error, questions) => {
         params = req.body
         console.log(params)
@@ -23,7 +22,6 @@ exports.createQuiz = (req, res) => {
                 console.log(err)
                 res.status(400)
             }
-            console.log(created_quiz)
             res.json(created_quiz)
         });
         
@@ -35,6 +33,11 @@ exports.joinQuiz = (req, res) => {
     let quiz_short_id = req.params.quiz_short_id;
     Quiz.findOne({short_id: quiz_short_id}, (error, quiz) => {
         params = req.body
+
+        if(error){
+            console.log(error)
+            res.status(400)
+        }
         
         let found = quiz.participants.find((participant) => {
             return participant.user_id === params.user_id
@@ -42,10 +45,14 @@ exports.joinQuiz = (req, res) => {
 
         if(!found){
             quiz.participants.push(params)
-            quiz.save()
+            quiz.save((error, savedQuiz) => {
+                if(error){
+                    console.log(error)
+                    res.status(400)
+                }
+                res.json(savedQuiz)
+            })
         }
-        res.json(quiz)
-
     })
 }
 

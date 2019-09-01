@@ -4,6 +4,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const contentRouter = require("./content/content.routes");
 const quizRouter = require("./quiz/quiz.routes");
+const Quiz = require("./quiz/models/Quiz")
 
 
 // Connect to DB
@@ -36,8 +37,59 @@ io.on('connection', function(socket){
     });
     
     socket.on('quiz', function(data) {
-        socket.join(data.quiz);
-        console.log(data.quiz)
+
+        Quiz.findOne({_id: data.quiz}, (error, quiz) => { 
+            if(error){
+                console.log(error)
+                return
+            }
+            if(quiz.is_started === true){
+                console.log("the quiz already started")
+                return
+            }
+            let found = quiz.participants.find((participant) => {
+                return participant.user_id === data.user_id
+            })
+
+    
+            if(!found){
+                quiz.participants.push({user_id:data.user_id, name: data.name})
+                console.log(4)
+                quiz.save((error, savedQuiz) => {
+                    if(error){
+                        console.log(error)
+                    }
+                    socket.join(data.quiz);
+                    socket.broadcast.to(data.quiz).emit("player_connected", {data})
+                })
+            }else{
+                socket.join(data.quiz);
+                socket.broadcast.to(data.quiz).emit("player_connected", {data})
+            }
+
+        })
+ 
+    });
+
+    socket.on("start_quiz", function(data){
+        Quiz.findOne({_id: data.quiz}, (error, quiz) => { 
+            if(error){
+                console.log(error)
+                return
+            }
+            if(quiz.is_started === true){
+                console.log("the quiz already started")
+                return
+            }
+            quiz.is_started = true
+            quiz.save((error, savedQuiz) => {
+                if(error){
+                    console.log(error)
+                }
+                io.sockets.emit("quiz_started", {data})
+        })
+        })
+
     });
 
     socket.on("question_answered", function(data){
